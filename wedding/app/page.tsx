@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Heart, Calendar, Clock, MapPin, Mail, Phone, Palette } from 'lucide-react';
+import { Heart, Calendar, Clock, MapPin, Mail, Phone, Palette, Quote } from 'lucide-react';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
 import TimelineSeparator from '@mui/lab/TimelineSeparator';
@@ -17,6 +17,7 @@ import { useCountdown } from './hooks/useCountdown';
 import { useScrollSpy } from './hooks/useScrollSpy';
 import { useRSVPForm } from '@/features/rsvp/useRSVPForm';
 import { RSVPFormData, Countdown, Venue } from './types';
+import {WishesCarousel} from '@/features/wishes/WishesCarouselVertical';
 
 const SECTIONS = ['home', 'schedule', 'story', 'gallery', 'details', 'colors', 'rsvp'] as const;
 type Section = typeof SECTIONS[number];
@@ -24,7 +25,24 @@ type Section = typeof SECTIONS[number];
 export default function WeddingWebsite() {
   const countdown = useCountdown(weddingConfig.date);
   const { activeSection, scrollToSection } = useScrollSpy([...SECTIONS]);
+  const [wishes, setWishes] = useState([]);
   const rsvp = useRSVPForm();
+
+  useEffect(() => {
+    async function fetchWishes() {
+      try {
+        const response = await fetch('/api/wishes');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        console.log('Fetched wishes:', data); // Debug log
+        setWishes(data || []);
+      } catch (error) {
+        console.error('Failed to fetch wishes:', error);
+        setWishes([]);
+      }
+    }
+    fetchWishes();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -40,6 +58,7 @@ export default function WeddingWebsite() {
       <Gallery />
       <WeddingDetails venue={weddingConfig.venue} />
       <ColorScheme />
+      <WishesCarousel wishes={wishes} />
       <RSVPForm
         formData={rsvp.formData}
         onFieldChange={rsvp.updateField}
@@ -94,19 +113,22 @@ interface HeroProps {
 }
 
 function Hero({ couple, date, venue, countdown, onRSVPClick }: HeroProps) {
+  const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_NAME;
+  const img_public_id = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1763569733/144_okbz4b.jpg`;
+  
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black"></div>
         { 
-        // <Image 
-        //   src="/gallery/header.jpg" 
-        //   alt="Wedding background" 
-        //   fill 
-        //   className="object-cover"
-        //   priority
-        // />
+        <Image 
+          src = {img_public_id}
+          alt="Wedding background" 
+          fill 
+          className="object-cover"
+          priority
+        />
         }
         <div className="absolute inset-0 bg-black/40"></div>
       </div>
@@ -183,15 +205,15 @@ function WeddingSchedule() {
   const [ref, isInView] = useInView();
   
   const schedule = [
-    { time: '3:00 PM', event: 'Guest Arrival', description: 'Welcome drinks and light refreshments', icon: '🎉' },
-    { time: '4:00 PM', event: 'Ceremony Begins', description: 'Please be seated by 3:45 PM', icon: '💒' },
-    { time: '4:30 PM', event: 'Cocktail Hour', description: 'Mingle with guests and enjoy hors d\'oeuvres', icon: '🍸' },
-    { time: '5:30 PM', event: 'Reception Entrance', description: 'Grand entrance of the newlyweds', icon: '✨' },
-    { time: '6:00 PM', event: 'Dinner Service', description: 'Three-course plated dinner', icon: '🍽️' },
-    { time: '7:30 PM', event: 'First Dance', description: 'Followed by parent dances', icon: '💃' },
-    { time: '8:00 PM', event: 'Open Dancing', description: 'Dance the night away!', icon: '🎵' },
-    { time: '10:00 PM', event: 'Cake Cutting', description: 'Sweet celebration', icon: '🎂' },
-    { time: '11:00 PM', event: 'Last Dance', description: 'Thank you for celebrating with us!', icon: '🌙' }
+    { time: '6:00 PM', event: 'Guest Arrival', description: 'Guests are seated; light instrumental or love songs playing', icon: '🎉' },
+    { time: '6:10 PM', event: 'Groom\'s Entrance', description: 'Groom walks down the aisle', icon: '🤵' },
+    { time: '6:15 PM', event: 'Bride\'s Entrance', description: 'Bride walks down the aisle', icon: '👰' },
+    { time: '6:20 PM', event: 'Opening Speech', description: 'Welcome speech', icon: '🎙️' },
+    { time: '6:30 PM', event: 'Cake Cutting Ceremony', description: 'Groom and Bride cuts the cake together', icon: '🎂' },
+    { time: '6:45 PM', event: 'Friend\'s Speeches', description: 'Groom and Bride\'s friends give short speech', icon: '🗣️' },
+    { time: '7:00 PM', event: 'Dinner', description: 'Guests enjoy dinner', icon: '🍽️' },
+    { time: '8:00 PM', event: 'Bouqet Toss', description: 'Bride toss bouqet', icon: '💐' },
+    { time: '8:20 PM', event: 'Last Dance', description: 'Dance floor all night', icon: '💃' }
   ];
 
   return (
@@ -270,15 +292,15 @@ function Story() {
   const stories = [
     {
       title: "How We Met",
-      content: "Our story began on a beautiful spring day when fate brought us together at a mutual friend's gathering. What started as a simple conversation quickly turned into hours of laughter and connection that we'll never forget."
+      content: "Blah Blah"
     },
     {
       title: "The Proposal",
-      content: "Under the stars on a warm summer evening, surrounded by candles and rose petals, the question was asked and answered with tears of joy. It was a moment of pure magic that marked the beginning of our forever."
+      content: "Test Test"
     },
     {
       title: "Our Journey",
-      content: "Together we've built a life filled with adventure, love, and countless memories. From quiet mornings to exciting travels, every moment has brought us closer. Now, we're ready to embark on our greatest adventure yet - marriage."
+      content: "Very Good"
     }
   ];
 
@@ -321,18 +343,20 @@ function StoryCard({ story, index }: { story: any; index: number }) {
 // ============================================
 function Gallery() {
   const [ref, isInView] = useInView();
+  const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_NAME;
+  const img_public_id = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1763569733/144_okbz4b.jpg`;
   
   const images = [
-    { src: '/gallery/photo1.jpg', title: 'Engagement Day', cols: 2, rows: 2 },
-    { src: '/gallery/photo2.jpg', title: 'Beach Vacation', cols: 1, rows: 1 },
-    { src: '/gallery/photo3.jpg', title: 'First Date Spot', cols: 1, rows: 1 },
-    { src: '/gallery/photo4.jpg', title: 'Hiking Adventure', cols: 1, rows: 2 },
-    { src: '/gallery/photo5.jpg', title: 'City Nights', cols: 2, rows: 1 },
-    { src: '/gallery/photo6.jpg', title: 'Family Gathering', cols: 1, rows: 1 },
-    { src: '/gallery/photo7.jpg', title: 'Sunset Moments', cols: 1, rows: 2 },
-    { src: '/gallery/photo8.jpg', title: 'Proposal Location', cols: 2, rows: 1 },
-    { src: '/gallery/photo9.jpg', title: 'Dancing Together', cols: 1, rows: 1 },
-    { src: '/gallery/photo10.jpg', title: 'Cozy Evenings', cols: 1, rows: 1 },
+    { src: img_public_id, title: 'Engagement Day', cols: 2, rows: 2 },
+    { src: img_public_id, title: 'Beach Vacation', cols: 1, rows: 1 },
+    { src: img_public_id, title: 'First Date Spot', cols: 1, rows: 1 },
+    { src: img_public_id, title: 'Hiking Adventure', cols: 1, rows: 2 },
+    { src: img_public_id, title: 'City Nights', cols: 2, rows: 1 },
+    { src: img_public_id, title: 'Family Gathering', cols: 1, rows: 1 },
+    { src: img_public_id, title: 'Sunset Moments', cols: 1, rows: 2 },
+    { src: img_public_id, title: 'Proposal Location', cols: 2, rows: 1 },
+    { src: img_public_id, title: 'Dancing Together', cols: 1, rows: 1 },
+    { src: img_public_id, title: 'Cozy Evenings', cols: 1, rows: 1 },
   ];
 
   return (
@@ -345,50 +369,85 @@ function Gallery() {
           <p className="text-gray-600 text-base sm:text-lg">Capturing our journey together</p>
         </div>
 
-        {/* MUI Masonry Image List with Animation */}
-        <div ref={ref}>
-          <ImageList
-            variant="masonry"
-            cols={3}
-            gap={16}
+        {/* OPTION 1: MUI Quilted Layout (Fixed Grid with Different Sizes) */}
+        <div ref={ref} className="mb-8">
+          {/* <h3 className="text-center text-xl font-serif mb-6 text-gray-700">Gallery Style 1: Quilted Grid</h3> */}
+          {/* <ImageList
+            variant="quilted"
+            cols={4}  // 4 columns on desktop
+            rowHeight={200}  // Each row is 200px
+            gap={12}
             sx={{
               '@media (max-width: 600px)': {
-                columnCount: 1,
+                columnCount: 2,
+                rowHeight: 150,
               },
               '@media (min-width: 600px) and (max-width: 960px)': {
-                columnCount: 2,
+                columnCount: 3,
               },
             }}
           >
             {images.map((item, index) => (
               <ImageListItem 
                 key={index}
+                cols={item.cols}  // Width in columns
+                rows={item.rows}  // Height in rows
                 className={`transition-all duration-700 ${
                   isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
                 }`}
-                style={{ transitionDelay: `${index * 100}ms` }}
+                style={{ transitionDelay: `${index * 80}ms` }}
               >
-                <div className="relative bg-gray-200 overflow-hidden group cursor-pointer border-2 border-black hover:border-4 transition-all duration-300 aspect-square">
-                  {/* Placeholder - replace with actual images */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-300 flex items-center justify-center">
-                    <div className="text-center p-4">
-                      <div className="text-4xl sm:text-5xl md:text-6xl mb-2">📸</div>
-                      <p className="text-sm sm:text-base md:text-lg font-serif text-gray-700">{item.title}</p>
-                    </div>
+                <div className="relative overflow-hidden group cursor-pointer border-2 border-black hover:border-4 transition-all duration-300 h-full">
+                  <img
+                    src={item.src}
+                    alt={item.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300"></div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <p className="text-center font-serif text-sm sm:text-base">{item.title}</p>
                   </div>
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
                 </div>
               </ImageListItem>
             ))}
-          </ImageList>
+          </ImageList> */}
         </div>
 
-        <div className="text-center mt-8 md:mt-12">
-          <p className="text-gray-500 text-xs sm:text-sm">
-            📁 Add your photos to <span className="font-mono bg-gray-200 px-2 py-1 rounded text-black">public/gallery/</span> folder
-          </p>
+        {/* OPTION 2: Custom CSS Grid (More Control) */}
+        <div className="mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
+            {images.map((item, index) => (
+              <div
+                key={index}
+                className={`relative overflow-hidden group cursor-pointer border-2 border-black hover:border-4 transition-all duration-700 ${
+                  isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                }`}
+                style={{
+                  gridColumn: `span ${item.cols}`,
+                  gridRow: `span ${item.rows}`,
+                  transitionDelay: `${index * 80}ms`
+                }}
+              >
+                <img
+                  src={item.src}
+                  alt={item.title}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300"></div>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <p className="text-center font-serif text-sm sm:text-base">{item.title}</p>
+                  {/* Size indicator for demo */}
+                  <p className="text-center text-xs mt-1 text-gray-300">
+                    {item.cols}x{item.rows}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+        
       </div>
     </section>
   );
@@ -403,50 +462,84 @@ interface WeddingDetailsProps {
 
 function WeddingDetails({ venue }: WeddingDetailsProps) {
   const [ref, isInView] = useInView();
-  const details = [
-    { title: 'Ceremony', icon: Heart, ...venue.ceremony },
-    { title: 'Reception', icon: Heart, ...venue.reception }
-  ];
+  
+  // Only show ceremony (removed reception)
+  const { ceremony } = venue;
+  
+  // Function to open Google Maps
+  const openGoogleMaps = () => {
+    // Encode the address for URL
+    const encodedAddress = encodeURIComponent(ceremony.name);
+    // Google Maps URL - works on both mobile and desktop
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+    window.open(mapsUrl, '_blank');
+  };
 
   return (
     <section id="details" className="py-16 sm:py-20 md:py-24 px-4 bg-white">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-center text-black mb-12 md:mb-16">
           Event Details
         </h2>
 
-        <div ref={ref} className="grid md:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
-          {details.map(({ title, icon: Icon, name, address, time }, index) => (
-            <div
-              key={title}
-              className={`border-2 border-black p-6 sm:p-8 md:p-10 bg-white transition-all duration-700 hover:shadow-xl ${
-                isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
-              style={{ transitionDelay: `${index * 200}ms` }}
-            >
-              <div className="text-center mb-6 md:mb-8">
-                <Icon className="w-10 h-10 md:w-12 md:h-12 text-black mx-auto mb-4" />
-                <h3 className="text-2xl sm:text-3xl font-serif text-black">{title}</h3>
+        <div ref={ref}>
+          <div
+            className={`border-2 border-black p-6 sm:p-8 md:p-10 bg-white transition-all duration-700 hover:shadow-xl ${
+              isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+          >
+            <div className="text-center mb-6 md:mb-8">
+              <Heart className="w-10 h-10 md:w-12 md:h-12 text-black mx-auto mb-4" />
+              <h3 className="text-2xl sm:text-3xl font-serif text-black">Ceremony</h3>
+            </div>
+            
+            <div className="space-y-4 md:space-y-6 text-black">
+              {/* Time */}
+              <div className="flex items-start gap-3 md:gap-4">
+                <Clock className="w-5 h-5 md:w-6 md:h-6 text-black mt-1 flex-shrink-0" />
+                <div>
+                  <div className="font-semibold text-base md:text-lg mb-1">Time</div>
+                  <div className="text-gray-700 text-sm md:text-base">{ceremony.time}</div>
+                </div>
               </div>
-              <div className="space-y-4 md:space-y-6 text-black">
-                <div className="flex items-start gap-3 md:gap-4">
-                  <Clock className="w-5 h-5 md:w-6 md:h-6 text-black mt-1 flex-shrink-0" />
-                  <div>
-                    <div className="font-semibold text-base md:text-lg mb-1">Time</div>
-                    <div className="text-gray-700 text-sm md:text-base">{time}</div>
-                  </div>
+              
+              {/* Location with Google Maps Link */}
+              <div className="flex items-start gap-3 md:gap-4">
+                <MapPin className="w-5 h-5 md:w-6 md:h-6 text-black mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <div className="font-semibold text-base md:text-lg mb-1">Location</div>
+                  <div className="text-gray-700 text-sm md:text-base">{ceremony.name}</div>
+                  <div className="text-gray-600 text-xs md:text-sm mt-1">{ceremony.address}</div>
                 </div>
-                <div className="flex items-start gap-3 md:gap-4">
-                  <MapPin className="w-5 h-5 md:w-6 md:h-6 text-black mt-1 flex-shrink-0" />
-                  <div>
-                    <div className="font-semibold text-base md:text-lg mb-1">Location</div>
-                    <div className="text-gray-700 text-sm md:text-base">{name}</div>
-                    <div className="text-gray-600 text-xs md:text-sm mt-1">{address}</div>
-                  </div>
-                </div>
+              </div>
+              
+              {/* Get Directions Button */}
+              <div className="pt-4">
+                <button
+                  onClick={openGoogleMaps}
+                  className="w-full bg-black text-white py-3 px-6 rounded-lg hover:bg-gray-900 transition-colors flex items-center justify-center gap-2 text-sm md:text-base font-semibold"
+                >
+                  <MapPin className="w-5 h-5" />
+                  Get Directions on Google Maps
+                </button>
               </div>
             </div>
-          ))}
+          </div>
+        </div>
+
+        {/* What to Expect */}
+        <div 
+          className={`mt-12 md:mt-16 border-2 border-black p-8 sm:p-10 md:p-16 bg-white transition-all duration-700 ${
+            isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+          style={{ transitionDelay: '200ms' }}
+        >
+          <h3 className="text-2xl sm:text-3xl font-serif text-center text-black mb-4 md:mb-6">What to Expect</h3>
+          <p className="text-gray-700 text-center leading-relaxed text-sm sm:text-base md:text-lg max-w-3xl mx-auto">
+            Join us for an unforgettable evening of love, laughter, and new beginnings as we exchange our vows 
+            and celebrate with family and friends. The day will be filled with heartfelt moments, delicious food, 
+            and dancing. Your presence means the world to us.
+          </p>
         </div>
       </div>
     </section>
@@ -460,10 +553,10 @@ function ColorScheme() {
   const [ref, isInView] = useInView();
   
   const colorPalette = [
-    { name: 'Black', hex: '#000000', description: 'Formal elegance' },
-    { name: 'White', hex: '#FFFFFF', description: 'Classic purity' },
-    { name: 'Charcoal', hex: '#36454F', description: 'Sophisticated' },
-    { name: 'Silver', hex: '#C0C0C0', description: 'Accent shine' },
+    { name: 'Desert Sand', hex: '#e6ccb2', description: 'Formal elegance' },
+    { name: 'Soft Blossm', hex: '#d7a6b3', description: 'Classic purity' },
+    { name: 'Muted Olive', hex: '#b5c99a', description: 'Sophisticated' },
+    { name: 'Wisteria Blue', hex: '#81a4cd', description: 'Accent shine' },
   ];
 
   return (
@@ -474,7 +567,7 @@ function ColorScheme() {
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif mb-3 md:mb-4 text-black">
             Dress Code
           </h2>
-          <p className="text-gray-600 text-base sm:text-lg">Black Tie Optional</p>
+          {/* <p className="text-gray-600 text-base sm:text-lg">Black Tie Optional</p> */}
         </div>
 
         {/* Color Circles with Animation */}
@@ -506,7 +599,7 @@ function ColorScheme() {
         </div>
 
         {/* Dress Code with Decorative Border */}
-        <div className="grid md:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
+        {/* <div className="grid md:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
           <DressCodeCard title="For Her" index={0} isInView={isInView}>
             <ul className="space-y-3 text-gray-700 text-sm sm:text-base md:text-lg">
               <li className="flex items-start gap-3">
@@ -548,7 +641,7 @@ function ColorScheme() {
               </li>
             </ul>
           </DressCodeCard>
-        </div>
+        </div> */}
       </div>
     </section>
   );
@@ -617,19 +710,19 @@ function RSVPForm({ formData, onFieldChange, onSubmit, isSubmitting, isSubmitted
           <div className="space-y-5 md:space-y-6">
             <div>
               <label htmlFor="name" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Full Name *</label>
-              <input id="name" type="text" value={formData.name} onChange={(e) => onFieldChange('name', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base" placeholder="John Doe" />
+              <input id="name" type="text" value={formData.name} onChange={(e) => onFieldChange('name', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" placeholder="John Doe" />
             </div>
             <div>
               <label htmlFor="email" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Email *</label>
-              <input id="email" type="email" value={formData.email} onChange={(e) => onFieldChange('email', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base" placeholder="john@example.com" />
+              <input id="email" type="email" value={formData.email} onChange={(e) => onFieldChange('email', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" placeholder="john@example.com" />
             </div>
             <div>
               <label htmlFor="phone" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Phone</label>
-              <input id="phone" type="tel" value={formData.phone} onChange={(e) => onFieldChange('phone', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base" placeholder="+1 (555) 123-4567" />
+              <input id="phone" type="tel" value={formData.phone} onChange={(e) => onFieldChange('phone', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" placeholder="+1 (555) 123-4567" />
             </div>
             <div>
               <label htmlFor="guests" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Number of Guests *</label>
-              <select id="guests" value={formData.guests} onChange={(e) => onFieldChange('guests', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base">
+              <select id="guests" value={formData.guests} onChange={(e) => onFieldChange('guests', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black">
                 {['1', '2', '3', '4', '5+'].map(n => <option key={n} value={n}>{n} Guest{n !== '1' ? 's' : ''}</option>)}
               </select>
             </div>
@@ -645,8 +738,8 @@ function RSVPForm({ formData, onFieldChange, onSubmit, isSubmitting, isSubmitted
               </div>
             </div>
             <div>
-              <label htmlFor="message" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Special Notes or Dietary Restrictions</label>
-              <textarea id="message" value={formData.message} onChange={(e) => onFieldChange('message', e.target.value)} disabled={isSubmitting} rows={4} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base" placeholder="Any allergies, dietary restrictions, or special requests..." />
+              <label htmlFor="message" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Leave us a wish</label>
+              <textarea id="message" value={formData.message} onChange={(e) => onFieldChange('message', e.target.value)} disabled={isSubmitting} rows={4} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" placeholder="Any allergies, dietary restrictions, or special requests..." />
             </div>
             <button onClick={onSubmit} disabled={isSubmitting} className="w-full bg-black text-white py-3 md:py-4 text-base sm:text-lg font-semibold hover:bg-gray-900 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
               {isSubmitting ? 'Submitting...' : 'Submit RSVP'}

@@ -7,7 +7,7 @@ export const weddingConfig = {
   venue: {
     ceremony: {
       name: "Novotel Bangkok Sukhumvit 20",
-      address: "19/9 Sukhumvit Soi 20, Khlong Toei, Bangkok 10110, Thailand",
+      address: "19/9 Sukhumvit 20 Alley, Khlong Toei, Bangkok 10110, Thailand",
       time: "6:00 PM - 9:00 PM"
     },
     reception: {
