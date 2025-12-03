@@ -61,7 +61,7 @@ export default function WeddingWebsite() {
         onLoadComplete={() => {
           setIsLoading(false);
         }}        
-        minimumLoadTime={1300} // 3 seconds minimum
+        minimumLoadTime={5000} // 3 seconds minimum
       />
     );
   }
