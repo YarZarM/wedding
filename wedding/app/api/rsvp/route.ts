@@ -7,23 +7,35 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     
     // Validate required fields
-    if (!data.name || !data.email) {
+    if (!data.name || !data.phone) {
       return NextResponse.json(
         { 
           success: false,
-          error: 'Name and email are required' 
+          error: 'Name and phone number are required' 
         },
         { status: 400 }
       );
     }
 
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.email)) {
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // if (!emailRegex.test(data.email)) {
+    //   return NextResponse.json(
+    //     { 
+    //       success: false,
+    //       error: 'Invalid email format' 
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
+
+    // Validate phone format
+    const digitsOnly = data.phone.replace(/\D/g, '');
+    if (digitsOnly.length < 10 || digitsOnly.length > 15) {
       return NextResponse.json(
         { 
           success: false,
-          error: 'Invalid email format' 
+          error: 'Please enter a valid phone number (10-15 digits)' 
         },
         { status: 400 }
       );
@@ -34,8 +46,8 @@ export async function POST(request: NextRequest) {
       .from('rsvps')
       .insert([{
         name: data.name,
-        email: data.email,
-        phone: data.phone || null,
+        email: data.email || null,
+        phone: data.phone,
         guests: data.guests,
         attending: data.attending,
         message: data.message || null

@@ -16,7 +16,7 @@ export const weddingConfig = {
       time: "6:00 PM - 9:00 PM"
     }
   },
-  rsvpDeadline: "November 30th, 2025",
+  rsvpDeadline: "December 25th, 2025",
   registries: [
     { name: 'Amazon', color: 'bg-orange-500', url: 'https://amazon.com/registry' },
     { name: 'Target', color: 'bg-red-600', url: 'https://target.com/registry' },
