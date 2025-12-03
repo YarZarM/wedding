@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Heart, Calendar, Clock, MapPin, Mail, Phone, Palette, Quote } from 'lucide-react';
+import { Heart, Calendar, Clock, MapPin, Mail, Phone, Palette, Quote, CheckCircle } from 'lucide-react';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
 import TimelineSeparator from '@mui/lab/TimelineSeparator';
@@ -17,16 +17,26 @@ import { useCountdown } from './hooks/useCountdown';
 import { useScrollSpy } from './hooks/useScrollSpy';
 import { useRSVPForm } from '@/features/rsvp/useRSVPForm';
 import { RSVPFormData, Countdown, Venue } from './types';
-import {WishesCarousel} from '@/features/wishes/WishesCarouselVertical';
+import WishesCarousel from '@/features/wishes/WishesCarouselVertical';
+import dynamic from 'next/dynamic';
 
 const SECTIONS = ['home', 'schedule', 'story', 'gallery', 'details', 'colors', 'rsvp'] as const;
 type Section = typeof SECTIONS[number];
+
+const WeddingInvitationWithSealBreak = dynamic(
+  () => import('./components/WeddingIntroWithSwipe').then(mod => ({ 
+    default: mod.WeddingLoadingScreen
+  })),
+  { ssr: false }
+);
+
 
 export default function WeddingWebsite() {
   const countdown = useCountdown(weddingConfig.date);
   const { activeSection, scrollToSection } = useScrollSpy([...SECTIONS]);
   const [wishes, setWishes] = useState([]);
   const rsvp = useRSVPForm();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchWishes() {
@@ -34,7 +44,6 @@ export default function WeddingWebsite() {
         const response = await fetch('/api/wishes');
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        console.log('Fetched wishes:', data); // Debug log
         setWishes(data || []);
       } catch (error) {
         console.error('Failed to fetch wishes:', error);
@@ -43,6 +52,20 @@ export default function WeddingWebsite() {
     }
     fetchWishes();
   }, []);
+
+  if (isLoading) {
+    return (
+      <WeddingInvitationWithSealBreak
+        coupleNames={weddingConfig.couple}
+        weddingDate={weddingConfig.date}
+        onLoadComplete={() => {
+          setIsLoading(false);
+        }}        
+        minimumLoadTime={1300} // 3 seconds minimum
+      />
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -59,14 +82,18 @@ export default function WeddingWebsite() {
       <WeddingDetails venue={weddingConfig.venue} />
       <ColorScheme />
       <WishesCarousel wishes={wishes} />
-      <RSVPForm
+      <SmartRSVPForm
         formData={rsvp.formData}
         onFieldChange={rsvp.updateField}
         onSubmit={rsvp.submitForm}
+        onReset={rsvp.resetSubmission}  // NEW
         isSubmitting={rsvp.isSubmitting}
         isSubmitted={rsvp.isSubmitted}
+        hasSubmittedBefore={rsvp.hasSubmittedBefore}  // NEW
+        submittedData={rsvp.submittedData}  // NEW
         error={rsvp.error}
         deadline={weddingConfig.rsvpDeadline}
+        showResetOption={false}  // Set to true for testing
       />
       <Footer couple={weddingConfig.couple} date={weddingConfig.date} />
     </div>
@@ -291,17 +318,9 @@ function WeddingSchedule() {
 function Story() {
   const stories = [
     {
-      title: "How We Met",
-      content: "Blah Blah"
-    },
-    {
-      title: "The Proposal",
-      content: "Test Test"
-    },
-    {
       title: "Our Journey",
-      content: "Very Good"
-    }
+      content: "It is a journey of love, laughter, and growth over 14 years together. There are many memorable moments that have shaped our relationship and there are a lot of ups and downs along the way. Through it all, the care for each other has only grown stronger."
+    },
   ];
 
   return (
@@ -345,18 +364,23 @@ function Gallery() {
   const [ref, isInView] = useInView();
   const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_NAME;
   const img_public_id = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1763569733/144_okbz4b.jpg`;
-  
+
   const images = [
-    { src: img_public_id, title: 'Engagement Day', cols: 2, rows: 2 },
-    { src: img_public_id, title: 'Beach Vacation', cols: 1, rows: 1 },
-    { src: img_public_id, title: 'First Date Spot', cols: 1, rows: 1 },
-    { src: img_public_id, title: 'Hiking Adventure', cols: 1, rows: 2 },
-    { src: img_public_id, title: 'City Nights', cols: 2, rows: 1 },
-    { src: img_public_id, title: 'Family Gathering', cols: 1, rows: 1 },
-    { src: img_public_id, title: 'Sunset Moments', cols: 1, rows: 2 },
-    { src: img_public_id, title: 'Proposal Location', cols: 2, rows: 1 },
-    { src: img_public_id, title: 'Dancing Together', cols: 1, rows: 1 },
-    { src: img_public_id, title: 'Cozy Evenings', cols: 1, rows: 1 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Wedding_ukaslz.jpg`, title: 'Engagement Day', cols: 2, rows: 2 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Real_Propose_t5ibmm.jpg`, title: 'Propose at Kyoto', cols: 1, rows: 2 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Disney_b2iols.jpg`, title: 'Disney', cols: 1, rows: 2 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Aurora_l2aey7.jpg`, title: 'Aurora Hunting', cols: 1, rows: 1 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Phd_dm6qwb.jpg`, title: 'Phd Ceremony', cols: 1, rows: 2 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/c_fill,g_face,w_1200,h_1600/v1764786809/Bachelor_jr3pwr.jpg`, title: 'Bachelor', cols: 1, rows: 1 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Malaga_avofam.jpg`, title: 'Malaga Cruise', cols: 2, rows: 1 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Amsterdam_s7rh3e.jpg`, title: 'Amsterdam', cols: 1, rows: 2 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Barcelona_mgsib0.jpg`, title: 'Barcelona', cols: 1, rows: 1 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Piggy_q3bkka.jpg`, title: 'Piggy', cols: 1, rows: 2 },
+    // { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Start_Second_sgscgt.jpg`, title: 'Bangkok', cols: 1, rows: 1 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Italy_tq6eeb.jpg`, title: 'Italy', cols: 1, rows: 1 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/LieDown_kgixoc.jpg`, title: 'Italy', cols: 1, rows: 2 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/c_fill,g_face,w_1200,h_1200/v1764786809/Start_Second_sgscgt.jpg`, title: 'Bangkok', cols: 1, rows: 1 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Start_jhxvxd.jpg`, title: 'Very Beginning', cols: 1, rows: 1 },
   ];
 
   return (
@@ -366,7 +390,7 @@ function Gallery() {
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-black mb-3 md:mb-4">
             Our Moments
           </h2>
-          <p className="text-gray-600 text-base sm:text-lg">Capturing our journey together</p>
+          <p className="text-gray-600 text-base sm:text-lg">A glimpse of our journey together</p>
         </div>
 
         {/* OPTION 1: MUI Quilted Layout (Fixed Grid with Different Sizes) */}
@@ -670,78 +694,355 @@ function DressCodeCard({ title, index, isInView, children }: { title: string; in
 // ============================================
 // RSVP FORM
 // ============================================
-interface RSVPFormProps {
+// interface RSVPFormProps {
+//   formData: RSVPFormData;
+//   onFieldChange: (field: keyof RSVPFormData, value: string) => void;
+//   onSubmit: () => void;
+//   isSubmitting: boolean;
+//   isSubmitted: boolean;
+//   error: string | null;
+//   deadline: string;
+// }
+
+// function RSVPForm({ formData, onFieldChange, onSubmit, isSubmitting, isSubmitted, error, deadline }: RSVPFormProps) {
+//   const [ref, isInView] = useInView();
+
+//   return (
+//     <section id="rsvp" className="py-16 sm:py-20 md:py-24 px-4 bg-white">
+//       <div className="max-w-2xl mx-auto">
+//         <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-center text-black mb-3 md:mb-4">RSVP</h2>
+//         <p className="text-center text-gray-600 mb-12 md:mb-16 text-base sm:text-lg">Please respond by {deadline}</p>
+
+//         {isSubmitted && (
+//           <div className="bg-black text-white px-6 py-4 rounded-lg mb-8 text-center animate-slide-down">
+//             Thank you for your RSVP! We can't wait to celebrate with you! 🎉
+//           </div>
+//         )}
+
+//         {error && (
+//           <div className="bg-red-50 border-2 border-red-600 text-red-800 px-6 py-4 rounded-lg mb-8 text-center">
+//             {error}
+//           </div>
+//         )}
+
+//         <div
+//           ref={ref}
+//           className={`border-2 border-black p-6 sm:p-8 md:p-10 bg-white transition-all duration-700 ${
+//             isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+//           }`}
+//         >
+//           <div className="space-y-5 md:space-y-6">
+//             <div>
+//               <label htmlFor="name" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Full Name *</label>
+//               <input id="name" type="text" value={formData.name} onChange={(e) => onFieldChange('name', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" placeholder="John Doe" />
+//             </div>
+//             <div>
+//               <label htmlFor="email" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Email *</label>
+//               <input id="email" type="email" value={formData.email} onChange={(e) => onFieldChange('email', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" placeholder="john@example.com" />
+//             </div>
+//             <div>
+//               <label htmlFor="phone" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Phone</label>
+//               <input id="phone" type="tel" value={formData.phone} onChange={(e) => onFieldChange('phone', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" placeholder="+1 (555) 123-4567" />
+//             </div>
+//             <div>
+//               <label htmlFor="guests" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Number of Guests *</label>
+//               <select id="guests" value={formData.guests} onChange={(e) => onFieldChange('guests', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black">
+//                 {['1', '2', '3', '4', '5+'].map(n => <option key={n} value={n}>{n} Guest{n !== '1' ? 's' : ''}</option>)}
+//               </select>
+//             </div>
+//             <div>
+//               <label className="block text-black font-semibold mb-3 text-sm sm:text-base md:text-lg">Will you be attending? *</label>
+//               <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
+//                 {['yes', 'no'].map(val => (
+//                   <label key={val} className="flex items-center gap-2 md:gap-3 cursor-pointer">
+//                     <input type="radio" name="attending" value={val} checked={formData.attending === val} onChange={(e) => onFieldChange('attending', e.target.value)} disabled={isSubmitting} className="w-4 h-4 sm:w-5 sm:h-5" />
+//                     <span className="text-black text-sm sm:text-base md:text-lg">{val === 'yes' ? 'Joyfully Accept' : 'Regretfully Decline'}</span>
+//                   </label>
+//                 ))}
+//               </div>
+//             </div>
+//             <div>
+//               <label htmlFor="message" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Leave us a wish</label>
+//               <textarea id="message" value={formData.message} onChange={(e) => onFieldChange('message', e.target.value)} disabled={isSubmitting} rows={4} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" placeholder="Any allergies, dietary restrictions, or special requests..." />
+//             </div>
+//             <button onClick={onSubmit} disabled={isSubmitting} className="w-full bg-black text-white py-3 md:py-4 text-base sm:text-lg font-semibold hover:bg-gray-900 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+//               {isSubmitting ? 'Submitting...' : 'Submit RSVP'}
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+//     </section>
+//   );
+// }
+
+interface SmartRSVPFormProps {
   formData: RSVPFormData;
   onFieldChange: (field: keyof RSVPFormData, value: string) => void;
   onSubmit: () => void;
+  onReset?: () => void;
   isSubmitting: boolean;
   isSubmitted: boolean;
+  hasSubmittedBefore: boolean;
+  submittedData: RSVPFormData | null;
   error: string | null;
   deadline: string;
+  showResetOption?: boolean; // Allow admin/testing to reset
 }
 
-function RSVPForm({ formData, onFieldChange, onSubmit, isSubmitting, isSubmitted, error, deadline }: RSVPFormProps) {
-  const [ref, isInView] = useInView();
+function SmartRSVPForm({ 
+  formData, 
+  onFieldChange, 
+  onSubmit, 
+  onReset,
+  isSubmitting, 
+  isSubmitted,
+  hasSubmittedBefore,
+  submittedData,
+  error, 
+  deadline,
+  showResetOption = false
+}: SmartRSVPFormProps) {
 
+  // Show thank you message if already submitted
+  if (hasSubmittedBefore && submittedData) {
+    return (
+      <section id="rsvp" className="py-16 sm:py-20 md:py-24 px-4 bg-white">
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-center text-black mb-3 md:mb-4">
+            Thank You!
+          </h2>
+          <p className="text-center text-gray-600 mb-12 md:mb-16 text-base sm:text-lg">
+            Your RSVP has been received
+          </p>
+
+          {/* Thank You Card */}
+          <div className="border-2 border-black p-6 sm:p-8 md:p-10 bg-white shadow-lg">
+            {/* Success Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="bg-green-100 rounded-full p-4">
+                <CheckCircle className="w-16 h-16 text-green-600" />
+              </div>
+            </div>
+
+            {/* Thank You Message */}
+            <div className="text-center mb-8">
+              <h3 className="text-2xl sm:text-3xl font-serif text-black mb-4">
+                We've Got Your RSVP!
+              </h3>
+              <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-4">
+                Thank you for confirming your attendance, <strong>{submittedData.name}</strong>! 
+                We're so excited to celebrate with you.
+              </p>
+            </div>
+
+            {/* Submission Details */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+              <h4 className="font-semibold text-lg text-black mb-4">Your RSVP Details:</h4>
+              <div className="space-y-3 text-sm sm:text-base">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Name:</span>
+                  <span className="text-black font-medium">{submittedData.name}</span>
+                </div>
+                {/* <div className="flex justify-between">
+                  <span className="text-gray-600">Email:</span>
+                  <span className="text-black font-medium">{submittedData.email}</span>
+                </div> */}
+                {submittedData.phone && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Phone:</span>
+                    <span className="text-black font-medium">{submittedData.phone}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Guests:</span>
+                  <span className="text-black font-medium">{submittedData.guests}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Attending:</span>
+                  <span className={`font-medium ${submittedData.attending === 'yes' ? 'text-green-600' : 'text-red-600'}`}>
+                    {submittedData.attending === 'yes' ? '✓ Yes, I will attend' : '✗ Cannot attend'}
+                  </span>
+                </div>
+                {submittedData.message && (
+                  <div className="pt-2 border-t border-gray-200">
+                    <span className="text-gray-600 block mb-2">Your Message:</span>
+                    <p className="text-black italic">{submittedData.message}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Additional Info */}
+            <div className="text-center text-gray-600 text-sm sm:text-base mb-6">
+              <Heart className="w-6 h-6 text-red-500 mx-auto mb-2" />
+              <p>We can't wait to see you on our special day!</p>
+              <p className="mt-2 text-xs text-gray-500">
+                Need to make changes? Please contact us directly.
+              </p>
+            </div>
+
+            {/* Reset Button (for testing or if user wants to change RSVP) */}
+            {showResetOption && onReset && (
+              <div className="text-center pt-6 border-t border-gray-200">
+                <button
+                  onClick={onReset}
+                  className="text-sm text-gray-500 hover:text-black underline"
+                >
+                  Submit a new RSVP (Testing Only)
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show the form if not yet submitted
   return (
     <section id="rsvp" className="py-16 sm:py-20 md:py-24 px-4 bg-white">
       <div className="max-w-2xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-center text-black mb-3 md:mb-4">RSVP</h2>
-        <p className="text-center text-gray-600 mb-12 md:mb-16 text-base sm:text-lg">Please respond by {deadline}</p>
+        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-center text-black mb-3 md:mb-4">
+          RSVP
+        </h2>
+        <p className="text-center text-gray-600 mb-12 md:mb-16 text-base sm:text-lg">
+          Please respond by {deadline}
+        </p>
 
-        {isSubmitted && (
+        {/* Success Message (shown briefly after submission) */}
+        {isSubmitted && !hasSubmittedBefore && (
           <div className="bg-black text-white px-6 py-4 rounded-lg mb-8 text-center animate-slide-down">
+            <CheckCircle className="w-8 h-8 mx-auto mb-2" />
             Thank you for your RSVP! We can't wait to celebrate with you! 🎉
           </div>
         )}
 
+        {/* Error Message */}
         {error && (
           <div className="bg-red-50 border-2 border-red-600 text-red-800 px-6 py-4 rounded-lg mb-8 text-center">
             {error}
           </div>
         )}
 
-        <div
-          ref={ref}
-          className={`border-2 border-black p-6 sm:p-8 md:p-10 bg-white transition-all duration-700 ${
-            isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
+        {/* RSVP Form */}
+        <div className="border-2 border-black p-6 sm:p-8 md:p-10 bg-white">
           <div className="space-y-5 md:space-y-6">
+            {/* Name */}
             <div>
-              <label htmlFor="name" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Full Name *</label>
-              <input id="name" type="text" value={formData.name} onChange={(e) => onFieldChange('name', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" placeholder="John Doe" />
+              <label htmlFor="name" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">
+                Full Name *
+              </label>
+              <input 
+                id="name" 
+                type="text" 
+                value={formData.name} 
+                onChange={(e) => onFieldChange('name', e.target.value)} 
+                disabled={isSubmitting} 
+                className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" 
+                placeholder="John Doe" 
+                required
+              />
             </div>
+
+            {/* Email */}
+            {/* <div>
+              <label htmlFor="email" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">
+                Email *
+              </label>
+              <input 
+                id="email" 
+                type="email" 
+                value={formData.email} 
+                onChange={(e) => onFieldChange('email', e.target.value)} 
+                disabled={isSubmitting} 
+                className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" 
+                placeholder="john@example.com" 
+                required
+              />
+            </div> */}
+
+            {/* Phone */}
             <div>
-              <label htmlFor="email" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Email *</label>
-              <input id="email" type="email" value={formData.email} onChange={(e) => onFieldChange('email', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" placeholder="john@example.com" />
+              <label htmlFor="phone" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">
+                Phone *
+              </label>
+              <input 
+                id="phone" 
+                type="tel" 
+                value={formData.phone} 
+                onChange={(e) => onFieldChange('phone', e.target.value)} 
+                disabled={isSubmitting} 
+                className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" 
+                placeholder="+1 (555) 123-4567" 
+                required
+              />
             </div>
+
+            {/* Number of Guests */}
             <div>
-              <label htmlFor="phone" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Phone</label>
-              <input id="phone" type="tel" value={formData.phone} onChange={(e) => onFieldChange('phone', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" placeholder="+1 (555) 123-4567" />
-            </div>
-            <div>
-              <label htmlFor="guests" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Number of Guests *</label>
-              <select id="guests" value={formData.guests} onChange={(e) => onFieldChange('guests', e.target.value)} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black">
-                {['1', '2', '3', '4', '5+'].map(n => <option key={n} value={n}>{n} Guest{n !== '1' ? 's' : ''}</option>)}
+              <label htmlFor="guests" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">
+                Number of Guests *
+              </label>
+              <select 
+                id="guests" 
+                value={formData.guests} 
+                onChange={(e) => onFieldChange('guests', e.target.value)} 
+                disabled={isSubmitting} 
+                className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black"
+              >
+                {['1', '2', '3', '4', '5+'].map(n => (
+                  <option key={n} value={n}>{n} Guest{n !== '1' ? 's' : ''}</option>
+                ))}
               </select>
             </div>
+
+            {/* Attending */}
             <div>
-              <label className="block text-black font-semibold mb-3 text-sm sm:text-base md:text-lg">Will you be attending? *</label>
+              <label className="block text-black font-semibold mb-3 text-sm sm:text-base md:text-lg">
+                Will you be attending? *
+              </label>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
                 {['yes', 'no'].map(val => (
                   <label key={val} className="flex items-center gap-2 md:gap-3 cursor-pointer">
-                    <input type="radio" name="attending" value={val} checked={formData.attending === val} onChange={(e) => onFieldChange('attending', e.target.value)} disabled={isSubmitting} className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="text-black text-sm sm:text-base md:text-lg">{val === 'yes' ? 'Joyfully Accept' : 'Regretfully Decline'}</span>
+                    <input 
+                      type="radio" 
+                      name="attending" 
+                      value={val} 
+                      checked={formData.attending === val} 
+                      onChange={(e) => onFieldChange('attending', e.target.value)} 
+                      disabled={isSubmitting} 
+                      className="w-4 h-4 sm:w-5 sm:h-5" 
+                    />
+                    <span className="text-black text-sm sm:text-base md:text-lg">
+                      {val === 'yes' ? 'Joyfully Accept' : 'Regretfully Decline'}
+                    </span>
                   </label>
                 ))}
               </div>
             </div>
+
+            {/* Message */}
             <div>
-              <label htmlFor="message" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">Leave us a wish</label>
-              <textarea id="message" value={formData.message} onChange={(e) => onFieldChange('message', e.target.value)} disabled={isSubmitting} rows={4} className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" placeholder="Any allergies, dietary restrictions, or special requests..." />
+              <label htmlFor="message" className="block text-black font-semibold mb-2 text-sm sm:text-base md:text-lg">
+                Leave us a wish or note
+              </label>
+              <textarea 
+                id="message" 
+                value={formData.message} 
+                onChange={(e) => onFieldChange('message', e.target.value)} 
+                disabled={isSubmitting} 
+                rows={4} 
+                className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100 text-sm sm:text-base text-black" 
+                placeholder="You can leave any notes here." 
+              />
             </div>
-            <button onClick={onSubmit} disabled={isSubmitting} className="w-full bg-black text-white py-3 md:py-4 text-base sm:text-lg font-semibold hover:bg-gray-900 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+
+            {/* Submit Button */}
+            <button 
+              onClick={onSubmit} 
+              disabled={isSubmitting} 
+              className="w-full bg-black text-white py-3 md:py-4 text-base sm:text-lg font-semibold hover:bg-gray-900 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
               {isSubmitting ? 'Submitting...' : 'Submit RSVP'}
             </button>
           </div>
@@ -766,14 +1067,14 @@ function Footer({ couple, date }: FooterProps) {
         <Heart className="w-10 h-10 md:w-12 md:h-12 text-white mx-auto mb-4 md:mb-6" />
         <h3 className="text-3xl sm:text-4xl font-serif mb-3 md:mb-4">{couple.name1} & {couple.name2}</h3>
         <p className="text-gray-400 mb-6 md:mb-8 text-base sm:text-lg">{new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-        <div className="flex justify-center gap-6 md:gap-8 mb-6 md:mb-8">
+        {/* <div className="flex justify-center gap-6 md:gap-8 mb-6 md:mb-8">
           <button onClick={() => window.location.href = 'mailto:wedding@example.com'} className="hover:text-gray-400 transition" aria-label="Send email">
             <Mail className="w-6 h-6 md:w-7 md:h-7" />
           </button>
           <button onClick={() => window.location.href = 'tel:+1234567890'} className="hover:text-gray-400 transition" aria-label="Call us">
             <Phone className="w-6 h-6 md:w-7 md:h-7" />
           </button>
-        </div>
+        </div> */}
         <p className="text-sm text-gray-500">We can't wait to celebrate with you ♥</p>
       </div>
     </footer>

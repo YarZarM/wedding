@@ -1,9 +1,18 @@
+// export interface RSVPFormData {
+//   name: string;
+//   email: string;
+//   phone: string;
+//   guests: string;
+//   attending: 'yes' | 'no';
+//   message: string;
+// }
+
 export interface RSVPFormData {
   name: string;
   email: string;
   phone: string;
   guests: string;
-  attending: 'yes' | 'no';
+  attending: string;
   message: string;
 }
 
