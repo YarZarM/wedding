@@ -144,7 +144,8 @@ function Hero({ couple, date, venue, countdown, onRSVPClick }: HeroProps) {
   const img_public_id = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1763569733/144_okbz4b.jpg`;
   
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
+    // <section id="home" className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
+    <section id="home" className="relative min-h-screen flex items-start justify-center px-4 pt-24 sm:pt-28 md:pt-32 pb-20 overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black"></div>
@@ -189,7 +190,8 @@ function Hero({ couple, date, venue, countdown, onRSVPClick }: HeroProps) {
           ))}
         </div>
 
-        <div className="space-y-2 mb-8 md:mb-12 text-sm sm:text-base md:text-lg animate-slide-up animation-delay-1000">
+        {/* <div className="space-y-2 mb-8 md:mb-12 text-sm sm:text-base md:text-lg animate-slide-up animation-delay-1000"> */}
+        <div className="space-y-2 mb-8 md:mb-12 mt-40 sm:mt-38 md:mt-46 text-sm sm:text-base md:text-lg animate-slide-up animation-delay-1000">
           <div className="flex items-center justify-center gap-2">
             <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>{new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
@@ -370,14 +372,14 @@ function Gallery() {
     { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Real_Propose_t5ibmm.jpg`, title: 'Propose at Kyoto', cols: 1, rows: 2 },
     { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Disney_b2iols.jpg`, title: 'Disney', cols: 1, rows: 2 },
     { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Aurora_l2aey7.jpg`, title: 'Aurora Hunting', cols: 1, rows: 1 },
-    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Phd_dm6qwb.jpg`, title: 'Phd Ceremony', cols: 1, rows: 2 },
-    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/c_fill,g_face,w_1200,h_1600/v1764786809/Bachelor_jr3pwr.jpg`, title: 'Bachelor', cols: 1, rows: 1 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/c_fill,g_auto,w_600,h_1000/v1764786809/Phd_dm6qwb.jpg`, title: 'Phd Ceremony', cols: 1, rows: 2 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/c_fill,g_auto,w_1200,h_1600/v1764786809/Bachelor_jr3pwr.jpg`, title: 'Bachelor', cols: 1, rows: 1 },
     { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Malaga_avofam.jpg`, title: 'Malaga Cruise', cols: 2, rows: 1 },
     { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Amsterdam_s7rh3e.jpg`, title: 'Amsterdam', cols: 1, rows: 2 },
-    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Barcelona_mgsib0.jpg`, title: 'Barcelona', cols: 1, rows: 1 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Snow_aakllw.jpg`, title: 'Barcelona', cols: 1, rows: 1 },
     { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Piggy_q3bkka.jpg`, title: 'Piggy', cols: 1, rows: 2 },
     // { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Start_Second_sgscgt.jpg`, title: 'Bangkok', cols: 1, rows: 1 },
-    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Italy_tq6eeb.jpg`, title: 'Italy', cols: 1, rows: 1 },
+    { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Paris_oqbck6.jpg`, title: 'Italy', cols: 1, rows: 1 },
     { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/LieDown_kgixoc.jpg`, title: 'Italy', cols: 1, rows: 2 },
     { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/c_fill,g_face,w_1200,h_1200/v1764786809/Start_Second_sgscgt.jpg`, title: 'Bangkok', cols: 1, rows: 1 },
     { src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Start_jhxvxd.jpg`, title: 'Very Beginning', cols: 1, rows: 1 },
