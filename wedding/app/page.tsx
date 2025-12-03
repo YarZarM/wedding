@@ -172,7 +172,7 @@ function Hero({ couple, date, venue, countdown, onRSVPClick }: HeroProps) {
           {couple.name2}
         </h1>
         <p className="text-lg sm:text-xl md:text-2xl mb-8 md:mb-12 font-light animate-slide-up animation-delay-200">
-          are getting married
+          are getting married!
         </p>
         
         {/* Countdown */}
