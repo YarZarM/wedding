@@ -175,7 +175,9 @@ function Hero({ couple, date, venue, countdown, onRSVPClick }: HeroProps) {
         <p className="text-lg sm:text-xl md:text-2xl mb-8 md:mb-12 font-light animate-slide-up animation-delay-200">
           are getting married!
         </p>
-        
+        <p className="text-lg sm:text-xl md:text-2xl mb-2 md:mb-12 font-light animate-slide-up animation-delay-200">
+          YOU ARE CORDIALLY INVITED.
+        </p>
         {/* Countdown */}
         <div className="grid grid-cols-4 gap-2 sm:gap-4 md:gap-8 mb-8 md:mb-12 max-w-3xl mx-auto animate-slide-up animation-delay-400">
           {Object.entries(countdown).map(([unit, value], index) => (
@@ -215,7 +217,8 @@ function Hero({ couple, date, venue, countdown, onRSVPClick }: HeroProps) {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce text-white">
+      {/* <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce text-white"> */}
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 animate-bounce text-white">
         <div className="flex flex-col items-center gap-2">
           <span className="text-sm">Scroll Down</span>
           <div className="w-6 h-10 border-2 border-white rounded-full flex items-start justify-center p-2">
