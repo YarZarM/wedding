@@ -77,7 +77,7 @@ export default function WeddingWebsite() {
       <WeddingSchedule />
       <Story />
       <Gallery />
-      <WeddingDetails venue={weddingConfig.venue} />
+      <WeddingDetails venue={weddingConfig.venue} date={weddingConfig.date} />
       <ColorScheme />
       <WishesCarousel wishes={wishes} />
       <SmartRSVPForm
@@ -143,7 +143,8 @@ function Hero({ couple, date, venue, countdown, onRSVPClick }: HeroProps) {
   
   return (
     // <section id="home" className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
-    <section id="home" className="relative min-h-screen flex items-start justify-center px-4 pt-24 sm:pt-28 md:pt-32 pb-20 overflow-hidden">
+    // <section id="home" className="relative min-h-screen flex items-start justify-center px-4 pt-24 sm:pt-28 md:pt-32 pb-20 overflow-hidden">
+    <section id="home" className="relative min-h-screen flex flex-col justify-between px-4 pt-24 sm:pt-28 md:pt-32 pb-24 overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black"></div>
@@ -160,7 +161,8 @@ function Hero({ couple, date, venue, countdown, onRSVPClick }: HeroProps) {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 text-center max-w-5xl w-full text-white animate-fade-in">
+      {/* <div className="relative z-10 text-center max-w-5xl w-full text-white animate-fade-in"> */}
+      <div className="relative z-10 text-center max-w-5xl w-full text-white animate-fade-in mx-auto">
         <div className="mb-8 animate-float">
           <Heart className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4" />
         </div>
@@ -189,21 +191,24 @@ function Hero({ couple, date, venue, countdown, onRSVPClick }: HeroProps) {
             </div>
           ))}
         </div>
+      </div>
 
+      <div className="relative z-10 text-center max-w-5xl w-full text-white mx-auto space-y-6 sm:space-y-8">
         {/* <div className="space-y-2 mb-8 md:mb-12 text-sm sm:text-base md:text-lg animate-slide-up animation-delay-1000"> */}
-        <div className="space-y-2 mb-8 md:mb-12 mt-40 sm:mt-38 md:mt-46 text-sm sm:text-base md:text-lg animate-slide-up animation-delay-1000">
+        <div className="space-y-1.5 sm:space-y-2 text-sm sm:text-base md:text-lg animate-slide-up animation-delay-1000">
+        {/* <div className="space-y-2 mb-8 md:mb-12 mt-40 sm:mt-38 md:mt-46 text-sm sm:text-base md:text-lg animate-slide-up animation-delay-1000"> */}
           <div className="flex items-center justify-center gap-2">
             <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>{new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
           </div>
-          <div className="flex items-center justify-center gap-2">
+          {/* <div className="flex items-center justify-center gap-2">
             <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>{venue.ceremony.time.split(' - ')[0]}</span>
           </div>
           <div className="flex items-center justify-center gap-2">
             <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>{venue.ceremony.name}</span>
-          </div>
+          </div> */}
         </div>
 
         <button
@@ -212,18 +217,24 @@ function Hero({ couple, date, venue, countdown, onRSVPClick }: HeroProps) {
         >
           RSVP Now
         </button>
+        <div className="flex flex-col items-center gap-2 animate-bounce pt-4">
+          <span className="text-xs sm:text-sm">Scroll Down</span>
+          <div className="w-5 h-8 sm:w-6 sm:h-10 border-2 border-white rounded-full flex items-start justify-center p-2">
+            <div className="w-1 h-2 sm:h-3 bg-white rounded-full animate-scroll"></div>
+          </div>
+        </div>
       </div>
 
       {/* Scroll Indicator */}
       {/* <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce text-white"> */}
-      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 animate-bounce text-white">
+      {/* <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 animate-bounce text-white">
         <div className="flex flex-col items-center gap-2">
           <span className="text-sm">Scroll Down</span>
           <div className="w-6 h-10 border-2 border-white rounded-full flex items-start justify-center p-2">
             <div className="w-1 h-3 bg-white rounded-full animate-scroll"></div>
           </div>
         </div>
-      </div>
+      </div> */}
     </section>
   );
 }
@@ -485,9 +496,10 @@ function GalleryImage({ item, index }: GalleryImageProps) {
 // ============================================
 interface WeddingDetailsProps {
   venue: { ceremony: Venue; reception: Venue };
+  date: string;
 }
 
-function WeddingDetails({ venue }: WeddingDetailsProps) {
+function WeddingDetails({ venue,date }: WeddingDetailsProps) {
   const [ref, isInView] = useInView();
   
   // Only show ceremony (removed reception)
@@ -521,6 +533,13 @@ function WeddingDetails({ venue }: WeddingDetailsProps) {
             </div>
             
             <div className="space-y-4 md:space-y-6 text-black">
+              <div className="flex items-start gap-3 md:gap-4">
+                <Calendar className="w-5 h-5 md:w-6 md:h-6 text-black mt-1 flex-shrink-0" />
+                <div>
+                  <div className="font-semibold text-base md:text-lg mb-1">Date</div>
+                  <div className="text-gray-700 text-sm md:text-base">{new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                </div>
+              </div>
               {/* Time */}
               <div className="flex items-start gap-3 md:gap-4">
                 <Clock className="w-5 h-5 md:w-6 md:h-6 text-black mt-1 flex-shrink-0" />
