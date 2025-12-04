@@ -10,8 +10,6 @@ import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
 import { weddingConfig } from './config/wedding.config';
 import { useCountdown } from './hooks/useCountdown';
 import { useScrollSpy } from './hooks/useScrollSpy';
@@ -398,87 +396,87 @@ function Gallery() {
           <p className="text-gray-600 text-base sm:text-lg">A glimpse of our journey together</p>
         </div>
 
-        {/* OPTION 1: MUI Quilted Layout (Fixed Grid with Different Sizes) */}
-        <div ref={ref} className="mb-8">
-          {/* <h3 className="text-center text-xl font-serif mb-6 text-gray-700">Gallery Style 1: Quilted Grid</h3> */}
-          {/* <ImageList
-            variant="quilted"
-            cols={4}  // 4 columns on desktop
-            rowHeight={200}  // Each row is 200px
-            gap={12}
-            sx={{
-              '@media (max-width: 600px)': {
-                columnCount: 2,
-                rowHeight: 150,
-              },
-              '@media (min-width: 600px) and (max-width: 960px)': {
-                columnCount: 3,
-              },
-            }}
-          >
-            {images.map((item, index) => (
-              <ImageListItem 
-                key={index}
-                cols={item.cols}  // Width in columns
-                rows={item.rows}  // Height in rows
-                className={`transition-all duration-700 ${
-                  isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-                }`}
-                style={{ transitionDelay: `${index * 80}ms` }}
-              >
-                <div className="relative overflow-hidden group cursor-pointer border-2 border-black hover:border-4 transition-all duration-300 h-full">
-                  <img
-                    src={item.src}
-                    alt={item.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300"></div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <p className="text-center font-serif text-sm sm:text-base">{item.title}</p>
-                  </div>
-                </div>
-              </ImageListItem>
-            ))}
-          </ImageList> */}
+        {/* Masonry Grid with Individual Animations */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
+          {images.map((item, index) => (
+            <GalleryImage 
+              key={index}
+              item={item}
+              index={index}
+            />
+          ))}
         </div>
-
-        {/* OPTION 2: Custom CSS Grid (More Control) */}
-        <div className="mb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
-            {images.map((item, index) => (
-              <div
-                key={index}
-                className={`relative overflow-hidden group cursor-pointer border-2 border-black hover:border-4 transition-all duration-700 ${
-                  isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-                }`}
-                style={{
-                  gridColumn: `span ${item.cols}`,
-                  gridRow: `span ${item.rows}`,
-                  transitionDelay: `${index * 80}ms`
-                }}
-              >
-                <img
-                  src={item.src}
-                  alt={item.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300"></div>
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-center font-serif text-sm sm:text-base">{item.title}</p>
-                  {/* Size indicator for demo */}
-                  <p className="text-center text-xs mt-1 text-gray-300">
-                    {item.cols}x{item.rows}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        
       </div>
     </section>
+  );
+}
+
+// ============================================
+// INDIVIDUAL GALLERY IMAGE WITH SCROLL ANIMATION
+// ============================================
+interface GalleryImageProps {
+  item: {
+    src: string;
+    title: string;
+    cols: number;
+    rows: number;
+  };
+  index: number;
+}
+
+function GalleryImage({ item, index }: GalleryImageProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          // Optional: Unobserve after animation to improve performance
+          observer.unobserve(entry.target);
+        }
+      },
+      {
+        threshold: 0.1, // Trigger when 10% of the image is visible
+        rootMargin: '50px', // Start animation 50px before entering viewport
+      }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`relative overflow-hidden group cursor-pointer rounded-md hover:border-4 transition-all duration-700 ${
+        isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'
+      }`}
+      style={{
+        gridColumn: `span ${item.cols}`,
+        gridRow: `span ${item.rows}`,
+        transitionDelay: `${index * 50}ms`, // Stagger animation based on index
+      }}
+    >
+      <img
+        src={item.src}
+        alt={item.title}
+        loading="lazy"
+        className="w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300"></div>
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <p className="text-center font-serif text-sm sm:text-base">{item.title}</p>
+      </div>
+    </div>
   );
 }
 
@@ -626,51 +624,6 @@ function ColorScheme() {
             ))}
           </div>
         </div>
-
-        {/* Dress Code with Decorative Border */}
-        {/* <div className="grid md:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
-          <DressCodeCard title="For Her" index={0} isInView={isInView}>
-            <ul className="space-y-3 text-gray-700 text-sm sm:text-base md:text-lg">
-              <li className="flex items-start gap-3">
-                <span className="text-black mt-1">•</span>
-                <span>Floor-length gowns or cocktail dresses</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-black mt-1">•</span>
-                <span>Black, white, silver, or charcoal tones preferred</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-black mt-1">•</span>
-                <span>Please avoid bright or neon colors</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-black mt-1">•</span>
-                <span>Elegant accessories in silver or crystal</span>
-              </li>
-            </ul>
-          </DressCodeCard>
-
-          <DressCodeCard title="For Him" index={1} isInView={isInView}>
-            <ul className="space-y-3 text-gray-700 text-sm sm:text-base md:text-lg">
-              <li className="flex items-start gap-3">
-                <span className="text-black mt-1">•</span>
-                <span>Tuxedo or dark suit preferred</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-black mt-1">•</span>
-                <span>Black, charcoal, or dark navy</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-black mt-1">•</span>
-                <span>Bow tie or necktie</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-black mt-1">•</span>
-                <span>Black leather dress shoes</span>
-              </li>
-            </ul>
-          </DressCodeCard>
-        </div> */}
       </div>
     </section>
   );
