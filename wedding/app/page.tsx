@@ -333,7 +333,13 @@ function Story() {
   const stories = [
     {
       title: "Our Journey",
-      content: "It is a journey of love, laughter, and growth over 14 years together. There are many memorable moments that have shaped our relationship and there are a lot of ups and downs along the way. Through it all, the care for each other has only grown stronger."
+      content: `Fourteen years is a long time to share a life, yet somehow it feels like both a blink and a lifetime.
+We grew up side by side, two people learning not only who we were, but who we could become together.
+There were seasons of ease and seasons that asked more of us than we expected.
+There were days filled with laughter, and others where we had to choose patience, softness, and understanding all over again.
+But in every chapter, we kept choosing each other.
+As we step into this new chapter, we bring with us everything those years taught us,
+a love strengthened by time, and a partnership we’re still proud to grow.`
     },
   ];
 
