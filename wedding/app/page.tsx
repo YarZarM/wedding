@@ -222,10 +222,10 @@ function Hero({ couple, date, venue, countdown, onRSVPClick }: HeroProps) {
           <span className="block text-2xl sm:text-4xl md:text-5xl my-3">&</span>
           {couple.name2}
         </h1>
-        <p className="text-lg sm:text-xl md:text-2xl mb-2 md:mb-11 font-light animate-slide-up animation-delay-200">
+        <p className="text-lg sm:text-xl md:text-2xl mb-2 md:mb-3 font-light animate-slide-up animation-delay-200">
           are getting married!
         </p>
-        <p className="text-lg sm:text-xl md:text-2xl mb-2 md:mb-11 font-light animate-slide-up animation-delay-200">
+        <p className="text-lg sm:text-xl md:text-2xl mb-2 md:mb-3 font-light animate-slide-up animation-delay-200">
           YOU ARE CORDIALLY INVITED.
         </p>
         {/* Countdown */}
