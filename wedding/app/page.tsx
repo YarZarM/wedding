@@ -17,6 +17,7 @@ import { useRSVPForm } from '@/features/rsvp/useRSVPForm';
 import { RSVPFormData, Countdown, Venue } from './types';
 import WishesCarousel from '@/features/wishes/WishesCarouselVertical';
 import dynamic from 'next/dynamic';
+import { useImagePreloader } from '@/features/hooks/useImagePreloader';
 
 const SECTIONS = ['home', 'schedule', 'story', 'gallery', 'details', 'colors', 'rsvp'] as const;
 type Section = typeof SECTIONS[number];
@@ -35,6 +36,43 @@ export default function WeddingWebsite() {
   const [wishes, setWishes] = useState([]);
   const rsvp = useRSVPForm();
   const [isLoading, setIsLoading] = useState(true);
+  const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_NAME;
+
+  const imagesToPreload = [
+    // Hero background
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1763569733/144_okbz4b.jpg`,
+    
+    // Gallery images
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Wedding_ukaslz.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Real_Propose_t5ibmm.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Disney_b2iols.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Aurora_l2aey7.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/c_fill,g_auto,w_600,h_1000/v1764786809/Phd_dm6qwb.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/c_fill,g_auto,w_1200,h_1600/v1764786809/Bachelor_jr3pwr.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Malaga_avofam.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Amsterdam_s7rh3e.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Snow_aakllw.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Piggy_q3bkka.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Paris_oqbck6.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/LieDown_kgixoc.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/c_fill,g_face,w_1200,h_1200/v1764786809/Start_Second_sgscgt.jpg`,
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1764786809/Start_jhxvxd.jpg`,
+    
+    // Loading screen icon
+    `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1763569733/Icon_pnlk8u.jpg`,
+  ];
+
+    // Use the image preloader hook
+  const {
+    isComplete,
+    progress,
+    loadedCount,
+    totalCount,
+    imagesLoaded,
+    minimumTimeMet,
+  } = useImagePreloader(imagesToPreload, {
+    minimumLoadTime: 3000, // Show loading screen for at least 3 seconds
+  });
 
   useEffect(() => {
     async function fetchWishes() {
@@ -51,19 +89,31 @@ export default function WeddingWebsite() {
     fetchWishes();
   }, []);
 
+  // if (isLoading) {
+  //   return (
+  //     <WeddingInvitationWithSealBreak
+  //       coupleNames={weddingConfig.couple}
+  //       weddingDate={weddingConfig.date}
+  //       onLoadComplete={() => {
+  //         setIsLoading(false);
+  //       }}        
+  //       minimumLoadTime={5000} // 3 seconds minimum
+  //     />
+  //   );
+  // }
   if (isLoading) {
     return (
       <WeddingInvitationWithSealBreak
         coupleNames={weddingConfig.couple}
         weddingDate={weddingConfig.date}
-        onLoadComplete={() => {
-          setIsLoading(false);
-        }}        
-        minimumLoadTime={5000} // 3 seconds minimum
+        progress={progress}
+        isComplete={isComplete}
+        imagesLoaded={imagesLoaded}
+        minimumTimeMet={minimumTimeMet}
+        onLoadComplete={() => setIsLoading(false)}
       />
     );
   }
-
 
   return (
     <div className="min-h-screen bg-white">
