@@ -18,6 +18,7 @@ import { RSVPFormData, Countdown, Venue } from './types';
 import WishesCarousel from '@/features/wishes/WishesCarouselVertical';
 import dynamic from 'next/dynamic';
 import { useImagePreloader } from '@/features/hooks/useImagePreloader';
+import { useMemo } from 'react';
 
 const SECTIONS = ['home', 'schedule', 'story', 'gallery', 'details', 'colors', 'rsvp'] as const;
 type Section = typeof SECTIONS[number];
@@ -38,7 +39,7 @@ export default function WeddingWebsite() {
   const [isLoading, setIsLoading] = useState(true);
   const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_NAME;
 
-  const imagesToPreload = [
+  const imagesToPreload = useMemo(() =>[
     // Hero background
     `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1763569733/144_okbz4b.jpg`,
     
@@ -60,7 +61,7 @@ export default function WeddingWebsite() {
     
     // Loading screen icon
     `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1763569733/Icon_pnlk8u.jpg`,
-  ];
+  ], [CLOUD_NAME]);
 
     // Use the image preloader hook
   const {
